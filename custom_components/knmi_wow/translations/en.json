@@ -1,0 +1,66 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "KNMI WOW Credentials",
+        "description": "Enter your WOW site credentials. You can find these at wow.knmi.nl after registering your weather station.",
+        "data": {
+          "site_id": "Site ID",
+          "auth_key": "Authentication Key (6-digit PIN)"
+        }
+      },
+      "sensors": {
+        "title": "Sensor Mapping",
+        "description": "Select which Home Assistant sensors to use for each weather parameter. All fields are optional.",
+        "data": {
+          "sensor_temperature": "Outdoor Temperature",
+          "sensor_humidity": "Humidity",
+          "sensor_pressure": "Barometric Pressure",
+          "sensor_rain": "Rain (since last reading)",
+          "sensor_rain_daily": "Daily Rain Total",
+          "sensor_wind_speed": "Wind Speed",
+          "sensor_wind_dir": "Wind Direction",
+          "sensor_wind_gust": "Wind Gust",
+          "sensor_dew_point": "Dew Point"
+        }
+      },
+      "options": {
+        "title": "Options",
+        "description": "Configure upload settings.",
+        "data": {
+          "update_interval": "Upload interval (minutes)",
+          "debug_mode": "Enable debug mode (logs sent data)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to WOW API",
+      "invalid_auth": "Invalid Site ID or Authentication Key",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This WOW site is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "KNMI WOW Options",
+        "description": "Update your sensor mappings and upload settings.",
+        "data": {
+          "update_interval": "Upload interval (minutes)",
+          "debug_mode": "Enable debug mode (logs sent data)",
+          "sensor_temperature": "Outdoor Temperature",
+          "sensor_humidity": "Humidity",
+          "sensor_pressure": "Barometric Pressure",
+          "sensor_rain": "Rain (since last reading)",
+          "sensor_rain_daily": "Daily Rain Total",
+          "sensor_wind_speed": "Wind Speed",
+          "sensor_wind_dir": "Wind Direction",
+          "sensor_wind_gust": "Wind Gust",
+          "sensor_dew_point": "Dew Point"
+        }
+      }
+    }
+  }
+}

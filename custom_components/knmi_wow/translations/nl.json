@@ -1,0 +1,66 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "KNMI WOW Inloggegevens",
+        "description": "Voer je WOW site-gegevens in. Deze vind je op wow.knmi.nl na het registreren van je weerstation.",
+        "data": {
+          "site_id": "Site ID",
+          "auth_key": "Authenticatiesleutel (6-cijferige PIN)"
+        }
+      },
+      "sensors": {
+        "title": "Sensor Koppeling",
+        "description": "Selecteer welke Home Assistant sensoren je wilt gebruiken voor elke weerparameter. Alle velden zijn optioneel.",
+        "data": {
+          "sensor_temperature": "Buitentemperatuur",
+          "sensor_humidity": "Luchtvochtigheid",
+          "sensor_pressure": "Luchtdruk",
+          "sensor_rain": "Regen (sinds laatste meting)",
+          "sensor_rain_daily": "Dagelijkse Neerslag",
+          "sensor_wind_speed": "Windsnelheid",
+          "sensor_wind_dir": "Windrichting",
+          "sensor_wind_gust": "Windstoten",
+          "sensor_dew_point": "Dauwpunt"
+        }
+      },
+      "options": {
+        "title": "Opties",
+        "description": "Configureer upload instellingen.",
+        "data": {
+          "update_interval": "Upload interval (minuten)",
+          "debug_mode": "Debug modus inschakelen (logt verzonden data)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kan geen verbinding maken met WOW API",
+      "invalid_auth": "Ongeldige Site ID of Authenticatiesleutel",
+      "unknown": "Onverwachte fout"
+    },
+    "abort": {
+      "already_configured": "Deze WOW site is al geconfigureerd"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "KNMI WOW Opties",
+        "description": "Wijzig je sensor koppelingen en upload instellingen.",
+        "data": {
+          "update_interval": "Upload interval (minuten)",
+          "debug_mode": "Debug modus inschakelen (logt verzonden data)",
+          "sensor_temperature": "Buitentemperatuur",
+          "sensor_humidity": "Luchtvochtigheid",
+          "sensor_pressure": "Luchtdruk",
+          "sensor_rain": "Regen (sinds laatste meting)",
+          "sensor_rain_daily": "Dagelijkse Neerslag",
+          "sensor_wind_speed": "Windsnelheid",
+          "sensor_wind_dir": "Windrichting",
+          "sensor_wind_gust": "Windstoten",
+          "sensor_dew_point": "Dauwpunt"
+        }
+      }
+    }
+  }
+}

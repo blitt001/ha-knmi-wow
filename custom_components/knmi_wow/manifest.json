@@ -1,0 +1,13 @@
+{
+  "domain": "knmi_wow",
+  "name": "KNMI WOW",
+  "codeowners": ["@blitt001"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/blitt001/ha-knmi-wow",
+  "integration_type": "service",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/blitt001/ha-knmi-wow/issues",
+  "requirements": ["aiohttp>=3.8.0"],
+  "version": "1.0.0"
+}
