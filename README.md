@@ -1,37 +1,55 @@
 # KNMI WOW Integration for Home Assistant
 
-Upload your weather station data from Home Assistant to [KNMI WOW](https://wow.knmi.nl) (Weather Observations Website).
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub Release](https://img.shields.io/github/v/release/blitt001/ha-knmi-wow)](https://github.com/blitt001/ha-knmi-wow/releases)
+[![GitHub License](https://img.shields.io/github/license/blitt001/ha-knmi-wow)](LICENSE)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1.0+-blue.svg)](https://www.home-assistant.io/)
+
+Upload your weather station data from [Home Assistant](https://www.home-assistant.io/) to [KNMI WOW](https://wow.knmi.nl) (Weather Observations Website).
 
 ## Features
 
+- Seamless integration with Home Assistant's UI
 - Automatically uploads weather data every 10 minutes (configurable)
 - UI-based configuration - no YAML editing required
 - Map any Home Assistant sensor to WOW weather parameters
 - Automatic unit conversion (metric to imperial)
-- Status sensor showing upload status and history
+- Status sensor with ENUM states (`pending`, `ok`, `error`)
+- Sensor availability check before upload
 - Debug mode for troubleshooting
 
 ## Prerequisites
 
-1. Register at [wow.knmi.nl](https://wow.knmi.nl) and create a weather station site
-2. Note your **Site ID** (UUID format) and **Authentication Key** (6-digit PIN)
+1. A working [Home Assistant](https://www.home-assistant.io/) installation (version 2025.1.0 or newer)
+2. [HACS](https://hacs.xyz/) installed (recommended for easy installation)
+3. Register at [wow.knmi.nl](https://wow.knmi.nl) and create a weather station site
+4. Note your **Site ID** (UUID format) and **Authentication Key** (6-digit PIN)
 
 ## Installation
 
 ### HACS (Recommended)
 
-1. Open HACS in Home Assistant
-2. Click the three dots menu → Custom repositories
-3. Add `https://github.com/blitt001/ha-knmi-wow` and select "Integration" as the category
-4. Search for "KNMI WOW" and install
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=blitt001&repository=ha-knmi-wow&category=integration)
+
+Or manually:
+
+1. Open [HACS](https://hacs.xyz/) in Home Assistant
+2. Click the three dots menu → **Custom repositories**
+3. Add `https://github.com/blitt001/ha-knmi-wow` and select **Integration** as the category
+4. Search for "KNMI WOW" and click **Download**
 5. Restart Home Assistant
 
 ### Manual Installation
 
-1. Copy the `custom_components/knmi_wow` folder to your `config/custom_components/` directory
-2. Restart Home Assistant
+1. Download the latest release from [GitHub](https://github.com/blitt001/ha-knmi-wow/releases)
+2. Copy the `custom_components/knmi_wow` folder to your Home Assistant `config/custom_components/` directory
+3. Restart Home Assistant
 
 ## Configuration
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=knmi_wow)
+
+Or manually:
 
 1. Go to **Settings** → **Devices & Services**
 2. Click **Add Integration** and search for "KNMI WOW"
@@ -79,7 +97,7 @@ The integration automatically converts metric units to the imperial units requir
 
 The integration creates a status sensor (`sensor.knmi_wow_status`) with:
 
-- **State**: `ok` or `error`
+- **State**: `pending`, `ok`, or `error` (ENUM device class)
 - **Attributes**:
   - `last_upload`: Timestamp of last successful upload
   - `last_error`: Error message (if any)
@@ -88,6 +106,10 @@ The integration creates a status sensor (`sensor.knmi_wow_status`) with:
   - `site_id`: Your WOW site ID
   - `debug_mode`: Whether debug mode is enabled
   - `last_sent_data`: The data sent in the last upload (only when debug mode is enabled)
+
+### Sensor Availability
+
+The integration checks if all configured sensors are available before uploading. If any sensor is unavailable, the upload is skipped and the status shows `error` with details about which sensors are unavailable.
 
 ## Debug Mode
 
@@ -163,6 +185,22 @@ This integration uses the WOW automatic upload API:
 - Method: HTTP GET with query parameters
 - Required parameters: `siteid`, `siteAuthenticationKey`, `dateutc`, `softwaretype`
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Support
+
+- [Report a bug](https://github.com/blitt001/ha-knmi-wow/issues/new?template=bug_report.md)
+- [Request a feature](https://github.com/blitt001/ha-knmi-wow/issues/new?template=feature_request.md)
+- [Home Assistant Community Forum](https://community.home-assistant.io/)
+
 ## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details.
