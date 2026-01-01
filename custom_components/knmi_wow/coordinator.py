@@ -62,9 +62,38 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.upload_count: int = 0
         self.last_request_params: dict[str, str] | None = None
 
+    def _all_sensors_available(self) -> tuple[bool, list[str]]:
+        """Check if all configured sensors are available.
+
+        Returns a tuple of (all_available, list_of_unavailable_entities).
+        """
+        config_data = {**self.entry.data, **self.entry.options}
+        unavailable: list[str] = []
+
+        for sensor_key in SENSOR_CONFIGS:
+            entity_id = config_data.get(sensor_key)
+            if not entity_id:
+                continue
+
+            state = self.hass.states.get(entity_id)
+            if state is None or state.state in ("unknown", "unavailable", None):
+                unavailable.append(entity_id)
+
+        return len(unavailable) == 0, unavailable
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Upload weather data to WOW."""
         try:
+            # Check if all configured sensors are available
+            all_available, unavailable = self._all_sensors_available()
+            if not all_available:
+                self.last_error = f"Sensors unavailable: {', '.join(unavailable)}"
+                _LOGGER.warning(
+                    "Skipping KNMI WOW upload - sensors unavailable: %s",
+                    unavailable,
+                )
+                return self._get_status_data(success=False, error=self.last_error)
+
             # Collect sensor values
             weather_data = self._collect_sensor_data()
 

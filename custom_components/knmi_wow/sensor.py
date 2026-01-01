@@ -3,14 +3,25 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_SITE_ID, DOMAIN
 from .coordinator import KNMIWOWCoordinator
+
+# Status options for the enum sensor
+STATUS_PENDING = "pending"
+STATUS_OK = "ok"
+STATUS_ERROR = "error"
+STATUS_OPTIONS = [STATUS_PENDING, STATUS_OK, STATUS_ERROR]
 
 
 async def async_setup_entry(
@@ -27,9 +38,15 @@ async def async_setup_entry(
 class KNMIWOWStatusSensor(CoordinatorEntity[KNMIWOWCoordinator], SensorEntity):
     """Sensor showing the status of KNMI WOW uploads."""
 
+    entity_description = SensorEntityDescription(
+        key="status",
+        translation_key="status",
+        icon="mdi:cloud-upload",
+        device_class=SensorDeviceClass.ENUM,
+    )
+
     _attr_has_entity_name = True
-    _attr_name = "Status"
-    _attr_icon = "mdi:cloud-upload"
+    _attr_options = STATUS_OPTIONS
 
     def __init__(
         self,
@@ -42,20 +59,27 @@ class KNMIWOWStatusSensor(CoordinatorEntity[KNMIWOWCoordinator], SensorEntity):
         site_id = entry.data[CONF_SITE_ID]
 
         self._attr_unique_id = f"{site_id}_status"
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, site_id)},
-            "name": "KNMI WOW",
-            "manufacturer": "KNMI",
-            "model": "Weather Observations Website",
-            "configuration_url": "https://wow.knmi.nl",
-        }
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, site_id)},
+            name="KNMI WOW",
+            manufacturer="KNMI",
+            model="Weather Observations Website",
+            configuration_url="https://wow.knmi.nl",
+        )
 
     @property
-    def native_value(self) -> str | None:
+    def native_value(self) -> str:
         """Return the state of the sensor."""
-        if self.coordinator.data:
-            return self.coordinator.data.get("status", "unknown")
-        return "unknown"
+        if self.coordinator.last_error:
+            return STATUS_ERROR
+        elif self.coordinator.last_upload:
+            return STATUS_OK
+        return STATUS_PENDING
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return True  # Always available, shows error state if there are issues
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
