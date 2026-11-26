@@ -71,5 +71,23 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "pending": "Pending",
+          "ok": "OK",
+          "error": "Error"
+        }
+      },
+      "last_upload": {
+        "name": "Last upload"
+      },
+      "upload_count": {
+        "name": "Upload count"
+      }
+    }
   }
 }

@@ -10,6 +10,7 @@ import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.util import dt as dt_util
 
 from homeassistant.const import ATTR_UNIT_OF_MEASUREMENT
 
@@ -115,7 +116,7 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             success, error = await self._send_to_wow(params)
 
             if success:
-                self.last_upload = datetime.now()
+                self.last_upload = dt_util.utcnow()
                 self.last_error = None
                 self.upload_count += 1
                 if self.debug_mode:
@@ -181,7 +182,7 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def _build_request_params(self, weather_data: dict[str, float]) -> dict[str, str]:
         """Build the request parameters for the WOW API."""
         # Format date as required: YYYY-mm-DD HH:mm:ss in UTC
-        now_utc = datetime.utcnow()
+        now_utc = dt_util.utcnow()
         date_str = now_utc.strftime("%Y-%m-%d %H:%M:%S")
 
         params = {
@@ -230,7 +231,7 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _get_status_data(self, success: bool, error: str | None = None) -> dict[str, Any]:
         """Get status data for the coordinator."""
-        next_update = datetime.now() + (self.update_interval or timedelta(minutes=DEFAULT_UPDATE_INTERVAL))
+        next_update = dt_util.utcnow() + (self.update_interval or timedelta(minutes=DEFAULT_UPDATE_INTERVAL))
 
         data = {
             "status": "ok" if success else "error",
@@ -256,7 +257,7 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 async def test_connection(hass: HomeAssistant, site_id: str, auth_key: str) -> tuple[bool, str | None]:
     """Test the connection to WOW API with a minimal request."""
     # Build minimal test params (we need at least one weather value)
-    now_utc = datetime.utcnow()
+    now_utc = dt_util.utcnow()
     date_str = now_utc.strftime("%Y-%m-%d %H:%M:%S")
 
     params = {

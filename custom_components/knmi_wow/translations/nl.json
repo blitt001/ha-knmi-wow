@@ -71,5 +71,23 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "pending": "In afwachting",
+          "ok": "OK",
+          "error": "Fout"
+        }
+      },
+      "last_upload": {
+        "name": "Laatste upload"
+      },
+      "upload_count": {
+        "name": "Aantal uploads"
+      }
+    }
   }
 }

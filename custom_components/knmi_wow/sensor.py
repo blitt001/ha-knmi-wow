@@ -3,10 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from datetime import datetime
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
+    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -32,21 +35,19 @@ async def async_setup_entry(
     """Set up KNMI WOW sensor from a config entry."""
     coordinator: KNMIWOWCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    async_add_entities([KNMIWOWStatusSensor(coordinator, entry)])
-
-
-class KNMIWOWStatusSensor(CoordinatorEntity[KNMIWOWCoordinator], SensorEntity):
-    """Sensor showing the status of KNMI WOW uploads."""
-
-    entity_description = SensorEntityDescription(
-        key="status",
-        translation_key="status",
-        icon="mdi:cloud-upload",
-        device_class=SensorDeviceClass.ENUM,
+    async_add_entities(
+        [
+            KNMIWOWStatusSensor(coordinator, entry),
+            KNMIWOWLastUploadSensor(coordinator, entry),
+            KNMIWOWUploadCountSensor(coordinator, entry),
+        ]
     )
 
+
+class KNMIWOWEntity(CoordinatorEntity[KNMIWOWCoordinator], SensorEntity):
+    """Base entity for KNMI WOW sensors, grouped under one device."""
+
     _attr_has_entity_name = True
-    _attr_options = STATUS_OPTIONS
 
     def __init__(
         self,
@@ -58,7 +59,7 @@ class KNMIWOWStatusSensor(CoordinatorEntity[KNMIWOWCoordinator], SensorEntity):
         self._entry = entry
         site_id = entry.data[CONF_SITE_ID]
 
-        self._attr_unique_id = f"{site_id}_status"
+        self._attr_unique_id = f"{site_id}_{self.entity_description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, site_id)},
             name="KNMI WOW",
@@ -68,6 +69,56 @@ class KNMIWOWStatusSensor(CoordinatorEntity[KNMIWOWCoordinator], SensorEntity):
         )
 
     @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return True  # Always available; upload problems show in the status sensor
+
+
+class KNMIWOWLastUploadSensor(KNMIWOWEntity):
+    """Timestamp of the last successful upload."""
+
+    entity_description = SensorEntityDescription(
+        key="last_upload",
+        translation_key="last_upload",
+        icon="mdi:clock-check-outline",
+        device_class=SensorDeviceClass.TIMESTAMP,
+    )
+
+    @property
+    def native_value(self) -> datetime | None:
+        """Return the time of the last successful upload."""
+        return self.coordinator.last_upload
+
+
+class KNMIWOWUploadCountSensor(KNMIWOWEntity):
+    """Number of successful uploads since the integration was (re)loaded."""
+
+    entity_description = SensorEntityDescription(
+        key="upload_count",
+        translation_key="upload_count",
+        icon="mdi:counter",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    )
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of successful uploads."""
+        return self.coordinator.upload_count
+
+
+class KNMIWOWStatusSensor(KNMIWOWEntity):
+    """Sensor showing the status of KNMI WOW uploads."""
+
+    entity_description = SensorEntityDescription(
+        key="status",
+        translation_key="status",
+        icon="mdi:cloud-upload",
+        device_class=SensorDeviceClass.ENUM,
+    )
+
+    _attr_options = STATUS_OPTIONS
+
+    @property
     def native_value(self) -> str:
         """Return the state of the sensor."""
         if self.coordinator.last_error:
@@ -75,11 +126,6 @@ class KNMIWOWStatusSensor(CoordinatorEntity[KNMIWOWCoordinator], SensorEntity):
         elif self.coordinator.last_upload:
             return STATUS_OK
         return STATUS_PENDING
-
-    @property
-    def available(self) -> bool:
-        """Return True if entity is available."""
-        return True  # Always available, shows error state if there are issues
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

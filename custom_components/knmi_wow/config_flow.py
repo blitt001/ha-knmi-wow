@@ -152,15 +152,19 @@ class KNMIWOWConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
                 self._migrate_registry_ids(entry, old_site_id, new_site_id)
 
-            return self.async_update_reload_and_abort(
+            # The entry's update listener (see __init__.py) reloads the
+            # integration once; async_update_reload_and_abort would reload twice.
+            self.hass.config_entries.async_update_entry(
                 entry,
                 unique_id=new_site_id,
                 title=f"KNMI WOW ({new_site_id[:8]}...)",
-                data_updates={
+                data={
+                    **entry.data,
                     CONF_SITE_ID: new_site_id,
                     CONF_AUTH_KEY: new_auth_key,
                 },
             )
+            return self.async_abort(reason="reconfigure_successful")
 
         return self.async_show_form(
             step_id="reconfigure",
