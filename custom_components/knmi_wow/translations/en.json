@@ -15,13 +15,16 @@
         "data": {
           "sensor_temperature": "Outdoor Temperature",
           "sensor_humidity": "Humidity",
-          "sensor_pressure": "Barometric Pressure",
-          "sensor_rain": "Rain (since last reading)",
+          "sensor_pressure": "Relative pressure (sea level)",
+          "sensor_pressure_abs": "Absolute pressure (station)",
+          "sensor_rain": "Rain rate (mm/h)",
           "sensor_rain_daily": "Daily Rain Total",
           "sensor_wind_speed": "Wind Speed",
           "sensor_wind_dir": "Wind Direction",
           "sensor_wind_gust": "Wind Gust",
-          "sensor_dew_point": "Dew Point"
+          "sensor_dew_point": "Dew Point",
+          "sensor_solar_radiation": "Solar radiation (W/m² or lux)",
+          "sensor_uv": "UV index"
         }
       },
       "options": {
@@ -61,13 +64,16 @@
           "debug_mode": "Enable debug mode (logs sent data)",
           "sensor_temperature": "Outdoor Temperature",
           "sensor_humidity": "Humidity",
-          "sensor_pressure": "Barometric Pressure",
-          "sensor_rain": "Rain (since last reading)",
+          "sensor_pressure": "Relative pressure (sea level)",
+          "sensor_pressure_abs": "Absolute pressure (station)",
+          "sensor_rain": "Rain rate (mm/h)",
           "sensor_rain_daily": "Daily Rain Total",
           "sensor_wind_speed": "Wind Speed",
           "sensor_wind_dir": "Wind Direction",
           "sensor_wind_gust": "Wind Gust",
-          "sensor_dew_point": "Dew Point"
+          "sensor_dew_point": "Dew Point",
+          "sensor_solar_radiation": "Solar radiation (W/m² or lux)",
+          "sensor_uv": "UV index"
         }
       }
     }

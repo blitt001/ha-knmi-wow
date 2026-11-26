@@ -18,9 +18,12 @@ from .const import (
     CONF_SENSOR_DEW_POINT,
     CONF_SENSOR_HUMIDITY,
     CONF_SENSOR_PRESSURE,
+    CONF_SENSOR_PRESSURE_ABS,
     CONF_SENSOR_RAIN,
     CONF_SENSOR_RAIN_DAILY,
+    CONF_SENSOR_SOLAR_RADIATION,
     CONF_SENSOR_TEMPERATURE,
+    CONF_SENSOR_UV,
     CONF_SENSOR_WIND_DIR,
     CONF_SENSOR_WIND_GUST,
     CONF_SENSOR_WIND_SPEED,
@@ -29,6 +32,7 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     MIN_UPDATE_INTERVAL,
+    SENSOR_CONFIGS,
 )
 from .coordinator import test_connection
 
@@ -99,12 +103,15 @@ class KNMIWOWConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Optional(CONF_SENSOR_TEMPERATURE): entity_selector,
                     vol.Optional(CONF_SENSOR_HUMIDITY): entity_selector,
                     vol.Optional(CONF_SENSOR_PRESSURE): entity_selector,
+                    vol.Optional(CONF_SENSOR_PRESSURE_ABS): entity_selector,
                     vol.Optional(CONF_SENSOR_RAIN): entity_selector,
                     vol.Optional(CONF_SENSOR_RAIN_DAILY): entity_selector,
                     vol.Optional(CONF_SENSOR_WIND_SPEED): entity_selector,
                     vol.Optional(CONF_SENSOR_WIND_DIR): entity_selector,
                     vol.Optional(CONF_SENSOR_WIND_GUST): entity_selector,
                     vol.Optional(CONF_SENSOR_DEW_POINT): entity_selector,
+                    vol.Optional(CONF_SENSOR_SOLAR_RADIATION): entity_selector,
+                    vol.Optional(CONF_SENSOR_UV): entity_selector,
                 }
             ),
         )
@@ -224,6 +231,11 @@ class KNMIWOWOptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
+            # A cleared selector is left out of user_input. Store it explicitly
+            # as None, otherwise the value from the initial setup (entry.data)
+            # would still be used when data and options are merged.
+            for sensor_key in SENSOR_CONFIGS:
+                user_input.setdefault(sensor_key, None)
             return self.async_create_entry(title="", data=user_input)
 
         # Create entity selector for sensors
@@ -265,6 +277,10 @@ class KNMIWOWOptionsFlow(config_entries.OptionsFlow):
                         description={"suggested_value": current_data.get(CONF_SENSOR_PRESSURE)},
                     ): entity_selector,
                     vol.Optional(
+                        CONF_SENSOR_PRESSURE_ABS,
+                        description={"suggested_value": current_data.get(CONF_SENSOR_PRESSURE_ABS)},
+                    ): entity_selector,
+                    vol.Optional(
                         CONF_SENSOR_RAIN,
                         description={"suggested_value": current_data.get(CONF_SENSOR_RAIN)},
                     ): entity_selector,
@@ -287,6 +303,14 @@ class KNMIWOWOptionsFlow(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_SENSOR_DEW_POINT,
                         description={"suggested_value": current_data.get(CONF_SENSOR_DEW_POINT)},
+                    ): entity_selector,
+                    vol.Optional(
+                        CONF_SENSOR_SOLAR_RADIATION,
+                        description={"suggested_value": current_data.get(CONF_SENSOR_SOLAR_RADIATION)},
+                    ): entity_selector,
+                    vol.Optional(
+                        CONF_SENSOR_UV,
+                        description={"suggested_value": current_data.get(CONF_SENSOR_UV)},
                     ): entity_selector,
                 }
             ),

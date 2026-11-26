@@ -32,37 +32,50 @@ CONF_DEBUG_MODE: Final = "debug_mode"
 CONF_SENSOR_TEMPERATURE: Final = "sensor_temperature"
 CONF_SENSOR_HUMIDITY: Final = "sensor_humidity"
 CONF_SENSOR_PRESSURE: Final = "sensor_pressure"
+CONF_SENSOR_PRESSURE_ABS: Final = "sensor_pressure_abs"
 CONF_SENSOR_RAIN: Final = "sensor_rain"
 CONF_SENSOR_RAIN_DAILY: Final = "sensor_rain_daily"
 CONF_SENSOR_WIND_SPEED: Final = "sensor_wind_speed"
 CONF_SENSOR_WIND_DIR: Final = "sensor_wind_dir"
 CONF_SENSOR_WIND_GUST: Final = "sensor_wind_gust"
 CONF_SENSOR_DEW_POINT: Final = "sensor_dew_point"
+CONF_SENSOR_SOLAR_RADIATION: Final = "sensor_solar_radiation"
+CONF_SENSOR_UV: Final = "sensor_uv"
 
 # All sensor configuration keys for iteration
 SENSOR_CONFIGS: Final = [
     CONF_SENSOR_TEMPERATURE,
     CONF_SENSOR_HUMIDITY,
     CONF_SENSOR_PRESSURE,
+    CONF_SENSOR_PRESSURE_ABS,
     CONF_SENSOR_RAIN,
     CONF_SENSOR_RAIN_DAILY,
     CONF_SENSOR_WIND_SPEED,
     CONF_SENSOR_WIND_DIR,
     CONF_SENSOR_WIND_GUST,
     CONF_SENSOR_DEW_POINT,
+    CONF_SENSOR_SOLAR_RADIATION,
+    CONF_SENSOR_UV,
 ]
 
-# Mapping from config key to WOW parameter name
+# Mapping from config key to WOW parameter name (wow.meteo.be protocol):
+# - baromin is relative (sea-level) pressure and is authoritative; absbaromin is
+#   absolute (station) pressure, from which the server derives relative pressure
+#   when baromin is not sent.
+# - rainin is rain intensity in inches per hour.
 SENSOR_TO_WOW_PARAM: Final = {
     CONF_SENSOR_TEMPERATURE: "tempf",
     CONF_SENSOR_HUMIDITY: "humidity",
     CONF_SENSOR_PRESSURE: "baromin",
+    CONF_SENSOR_PRESSURE_ABS: "absbaromin",
     CONF_SENSOR_RAIN: "rainin",
     CONF_SENSOR_RAIN_DAILY: "dailyrainin",
     CONF_SENSOR_WIND_SPEED: "windspeedmph",
     CONF_SENSOR_WIND_DIR: "winddir",
     CONF_SENSOR_WIND_GUST: "windgustmph",
     CONF_SENSOR_DEW_POINT: "dewptf",
+    CONF_SENSOR_SOLAR_RADIATION: "solarradiation",
+    CONF_SENSOR_UV: "UV",
 }
 
 # Sensor type categories for unit-aware conversion
@@ -70,6 +83,13 @@ SENSOR_TYPE_TEMPERATURE: Final = "temperature"
 SENSOR_TYPE_HUMIDITY: Final = "humidity"
 SENSOR_TYPE_PRESSURE: Final = "pressure"
 SENSOR_TYPE_RAIN: Final = "rain"
+SENSOR_TYPE_RAIN_RATE: Final = "rain_rate"
+SENSOR_TYPE_SOLAR_RADIATION: Final = "solar_radiation"
+SENSOR_TYPE_UV: Final = "uv"
+
+# Approximate conversion from illuminance to solar irradiance for sunlight,
+# used when a station only reports lux (e.g. Bresser 7-in-1): W/m² ≈ lx / 126.7
+LUX_PER_WATT_PER_M2: Final = 126.7
 SENSOR_TYPE_WIND_SPEED: Final = "wind_speed"
 SENSOR_TYPE_WIND_DIR: Final = "wind_dir"
 
@@ -78,12 +98,15 @@ SENSOR_TYPES: Final = {
     CONF_SENSOR_TEMPERATURE: SENSOR_TYPE_TEMPERATURE,
     CONF_SENSOR_HUMIDITY: SENSOR_TYPE_HUMIDITY,
     CONF_SENSOR_PRESSURE: SENSOR_TYPE_PRESSURE,
-    CONF_SENSOR_RAIN: SENSOR_TYPE_RAIN,
+    CONF_SENSOR_PRESSURE_ABS: SENSOR_TYPE_PRESSURE,
+    CONF_SENSOR_RAIN: SENSOR_TYPE_RAIN_RATE,
     CONF_SENSOR_RAIN_DAILY: SENSOR_TYPE_RAIN,
     CONF_SENSOR_WIND_SPEED: SENSOR_TYPE_WIND_SPEED,
     CONF_SENSOR_WIND_DIR: SENSOR_TYPE_WIND_DIR,
     CONF_SENSOR_WIND_GUST: SENSOR_TYPE_WIND_SPEED,
     CONF_SENSOR_DEW_POINT: SENSOR_TYPE_TEMPERATURE,
+    CONF_SENSOR_SOLAR_RADIATION: SENSOR_TYPE_SOLAR_RADIATION,
+    CONF_SENSOR_UV: SENSOR_TYPE_UV,
 }
 
 
@@ -178,6 +201,26 @@ def convert_value_with_unit(
         else:
             # Assume mm if unknown
             return mm_to_inches(value)
+
+    elif sensor_type == SENSOR_TYPE_RAIN_RATE:
+        # WOW expects inches per hour
+        if unit in ("mm/h", "mm/hr", "mm/u"):
+            return mm_to_inches(value)
+        elif unit in ("in/h", "in/hr"):
+            return value  # Already inches per hour
+        else:
+            # Assume mm/h if unknown
+            return mm_to_inches(value)
+
+    elif sensor_type == SENSOR_TYPE_SOLAR_RADIATION:
+        # WOW expects W/m²
+        if unit in ("lx", "lux"):
+            return value / LUX_PER_WATT_PER_M2  # approximation for sunlight
+        return value  # Assume W/m²
+
+    elif sensor_type == SENSOR_TYPE_UV:
+        # UV index - no conversion needed
+        return value
 
     elif sensor_type == SENSOR_TYPE_WIND_SPEED:
         # WOW expects mph

@@ -15,13 +15,16 @@
         "data": {
           "sensor_temperature": "Buitentemperatuur",
           "sensor_humidity": "Luchtvochtigheid",
-          "sensor_pressure": "Luchtdruk",
-          "sensor_rain": "Regen (sinds laatste meting)",
+          "sensor_pressure": "Relatieve luchtdruk (zeeniveau)",
+          "sensor_pressure_abs": "Absolute luchtdruk (station)",
+          "sensor_rain": "Regenintensiteit (mm/u)",
           "sensor_rain_daily": "Dagelijkse Neerslag",
           "sensor_wind_speed": "Windsnelheid",
           "sensor_wind_dir": "Windrichting",
           "sensor_wind_gust": "Windstoten",
-          "sensor_dew_point": "Dauwpunt"
+          "sensor_dew_point": "Dauwpunt",
+          "sensor_solar_radiation": "Zonnestraling (W/m² of lux)",
+          "sensor_uv": "UV-index"
         }
       },
       "options": {
@@ -61,13 +64,16 @@
           "debug_mode": "Debug modus inschakelen (logt verzonden data)",
           "sensor_temperature": "Buitentemperatuur",
           "sensor_humidity": "Luchtvochtigheid",
-          "sensor_pressure": "Luchtdruk",
-          "sensor_rain": "Regen (sinds laatste meting)",
+          "sensor_pressure": "Relatieve luchtdruk (zeeniveau)",
+          "sensor_pressure_abs": "Absolute luchtdruk (station)",
+          "sensor_rain": "Regenintensiteit (mm/u)",
           "sensor_rain_daily": "Dagelijkse Neerslag",
           "sensor_wind_speed": "Windsnelheid",
           "sensor_wind_dir": "Windrichting",
           "sensor_wind_gust": "Windstoten",
-          "sensor_dew_point": "Dauwpunt"
+          "sensor_dew_point": "Dauwpunt",
+          "sensor_solar_radiation": "Zonnestraling (W/m² of lux)",
+          "sensor_uv": "UV-index"
         }
       }
     }

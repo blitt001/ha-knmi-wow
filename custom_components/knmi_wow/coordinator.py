@@ -249,6 +249,8 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
                     if response.status == 200:
                         return True, None
+                    elif response.status == 403:
+                        return False, "Invalid Station ID or authentication key (403)"
                     elif response.status == 429:
                         _LOGGER.warning(
                             "WOW API rate limit exceeded (429). Consider increasing upload interval."
