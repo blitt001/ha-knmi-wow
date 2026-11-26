@@ -3,12 +3,12 @@ from typing import Final
 
 DOMAIN: Final = "knmi_wow"
 
-# WOW API endpoint
-WOW_API_URL: Final = "http://wow.metoffice.gov.uk/automaticreading"
+# WOW API endpoint (Wunderground protocol, hosted by KMI/IRM at wow.meteo.be)
+WOW_API_URL: Final = "https://wow.meteo.be/api/v2/send"
 
 # Default values
-DEFAULT_UPDATE_INTERVAL: Final = 10  # minutes
-MIN_UPDATE_INTERVAL: Final = 10  # minutes (WOW API rate limit)
+DEFAULT_UPDATE_INTERVAL: Final = 1  # minutes (recommended by KNMI)
+MIN_UPDATE_INTERVAL: Final = 1  # minutes
 
 # Software type identifier
 SOFTWARE_TYPE: Final = "HomeAssistant-KNMI-WOW"

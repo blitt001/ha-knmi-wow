@@ -108,8 +108,7 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # Log debug info if enabled
             if self.debug_mode:
                 # Create a safe copy without auth key for logging
-                safe_params = {k: v for k, v in params.items() if k != "siteAuthenticationKey"}
-                safe_params["siteAuthenticationKey"] = "******"
+                safe_params = {**params, "PASSWORD": "******"}
                 _LOGGER.info("KNMI WOW Debug - Sending data: %s", safe_params)
 
             # Send to WOW
@@ -186,9 +185,10 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         date_str = now_utc.strftime("%Y-%m-%d %H:%M:%S")
 
         params = {
-            "siteid": self.site_id,
-            "siteAuthenticationKey": self.auth_key,
+            "ID": self.site_id,
+            "PASSWORD": self.auth_key,
             "dateutc": date_str,
+            "action": "updateraw",
             "softwaretype": SOFTWARE_TYPE,
         }
 
@@ -202,7 +202,10 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Send data to WOW API."""
         url = f"{WOW_API_URL}?{urlencode(params)}"
 
-        _LOGGER.debug("Sending request to WOW: %s", url)
+        _LOGGER.debug(
+            "Sending request to WOW: %s",
+            {k: v for k, v in params.items() if k != "PASSWORD"},
+        )
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -243,7 +246,7 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # Create safe copy without auth key
             safe_params = {
                 k: v for k, v in self.last_request_params.items()
-                if k not in ("siteAuthenticationKey", "siteid")
+                if k not in ("PASSWORD", "ID")
             }
             data["last_sent_data"] = safe_params
 
@@ -257,9 +260,10 @@ async def test_connection(hass: HomeAssistant, site_id: str, auth_key: str) -> t
     date_str = now_utc.strftime("%Y-%m-%d %H:%M:%S")
 
     params = {
-        "siteid": site_id,
-        "siteAuthenticationKey": auth_key,
+        "ID": site_id,
+        "PASSWORD": auth_key,
         "dateutc": date_str,
+        "action": "updateraw",
         "softwaretype": f"{SOFTWARE_TYPE}-test",
     }
 

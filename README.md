@@ -10,7 +10,7 @@ Upload your weather station data from [Home Assistant](https://www.home-assistan
 ## Features
 
 - Seamless integration with Home Assistant's UI
-- Automatically uploads weather data every 10 minutes (configurable)
+- Automatically uploads weather data every minute (configurable)
 - UI-based configuration - no YAML editing required
 - Map any Home Assistant sensor to WOW weather parameters
 - Automatic unit conversion (metric to imperial)
@@ -23,7 +23,7 @@ Upload your weather station data from [Home Assistant](https://www.home-assistan
 1. A working [Home Assistant](https://www.home-assistant.io/) installation (version 2025.1.0 or newer)
 2. [HACS](https://hacs.xyz/) installed (recommended for easy installation)
 3. Register at [wow.knmi.nl](https://wow.knmi.nl) and create a weather station site
-4. Note your **Site ID** (UUID format) and **Authentication Key** (6-digit PIN)
+4. Note your **short station ID** (from the registration e-mail) and your self-chosen **Authentication Key**
 
 ## Installation
 
@@ -54,8 +54,8 @@ Or manually:
 1. Go to **Settings** → **Devices & Services**
 2. Click **Add Integration** and search for "KNMI WOW"
 3. Enter your WOW credentials:
-   - **Site ID**: Your WOW site identifier (UUID format)
-   - **Authentication Key**: Your 6-digit PIN
+   - **Station ID**: The short station ID from your registration e-mail
+   - **Authentication Key**: Your self-chosen authentication key
 4. Map your Home Assistant sensors to weather parameters:
    - Outdoor Temperature
    - Humidity
@@ -66,7 +66,7 @@ Or manually:
    - Wind Direction
    - Wind Gust
    - Dew Point
-5. Set your preferred upload interval (minimum 10 minutes)
+5. Set your preferred upload interval (default and minimum 1 minute)
 6. Optionally enable debug mode
 
 ### Changing Settings
@@ -76,6 +76,14 @@ To modify sensor mappings or settings after initial setup:
 1. Go to **Settings** → **Devices & Services**
 2. Find **KNMI WOW** and click **Configure** (gear icon)
 3. Update your settings and submit
+
+### Changing Station ID or Authentication Key
+
+1. Go to **Settings** → **Devices & Services** → **KNMI WOW**
+2. Open the entry's menu (⋮) and choose **Reconfigure**
+3. Enter the new Station ID and/or Authentication Key and submit
+
+Your sensor mappings, options and status sensor history are kept; the integration reloads automatically.
 
 ## Supported Sensors
 
@@ -156,13 +164,13 @@ The integration logs at different levels:
 ### Rate Limiting (429 errors)
 
 The WOW API has rate limits. If you see "Rate limit exceeded (429)" errors:
-- Ensure the upload interval is at least 10 minutes
+- Try a longer upload interval
 - Avoid manually reloading the integration repeatedly
 - Wait a few minutes before the next automatic upload
 
 ### Invalid credentials
 
-The Site ID should be a UUID like `6a571450-df53-e611-9401-0003ff5987fd`. You can find it on your WOW site page in brackets next to the station name.
+The Station ID is the short station ID from your WOW registration e-mail (not the long UUID used by the old Met Office endpoint).
 
 ### Sensors not updating after changing options
 
@@ -181,9 +189,9 @@ If your sensor shows total accumulated rain since installation, create a [Utilit
 ## API Reference
 
 This integration uses the WOW automatic upload API:
-- Endpoint: `http://wow.metoffice.gov.uk/automaticreading`
+- Endpoint: `https://wow.meteo.be/api/v2/send` (Wunderground protocol)
 - Method: HTTP GET with query parameters
-- Required parameters: `siteid`, `siteAuthenticationKey`, `dateutc`, `softwaretype`
+- Required parameters: `ID`, `PASSWORD`, `dateutc`, `action=updateraw`
 
 ## Contributing
 

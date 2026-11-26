@@ -5,8 +5,8 @@
         "title": "KNMI WOW Credentials",
         "description": "Enter your WOW site credentials. You can find these at wow.knmi.nl after registering your weather station.",
         "data": {
-          "site_id": "Site ID",
-          "auth_key": "Authentication Key (6-digit PIN)"
+          "site_id": "Station ID (short ID from registration email)",
+          "auth_key": "Authentication key (self-chosen)"
         }
       },
       "sensors": {
@@ -31,6 +31,14 @@
           "update_interval": "Upload interval (minutes)",
           "debug_mode": "Enable debug mode (logs sent data)"
         }
+      },
+      "reconfigure": {
+        "title": "Change Station ID / Authentication Key",
+        "description": "Update the credentials for your WOW station. Use the short station ID from your registration e-mail and your self-chosen authentication key. Sensor mappings and options are kept.",
+        "data": {
+          "site_id": "Station ID (short ID from registration email)",
+          "auth_key": "Authentication key (self-chosen)"
+        }
       }
     },
     "error": {
@@ -39,7 +47,8 @@
       "unknown": "Unexpected error"
     },
     "abort": {
-      "already_configured": "This WOW site is already configured"
+      "already_configured": "This WOW site is already configured",
+      "reconfigure_successful": "Credentials updated. The integration has been reloaded."
     }
   },
   "options": {

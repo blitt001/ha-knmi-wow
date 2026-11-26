@@ -8,6 +8,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
 
 from .const import (
@@ -132,6 +134,74 @@ class KNMIWOWConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
         )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Let the user change the Station ID and authentication key."""
+        entry = self._get_reconfigure_entry()
+
+        if user_input is not None:
+            old_site_id = entry.data[CONF_SITE_ID]
+            new_site_id = user_input[CONF_SITE_ID].strip()
+            new_auth_key = user_input[CONF_AUTH_KEY].strip()
+
+            if new_site_id != old_site_id:
+                # Make sure no other entry already uses this station ID
+                await self.async_set_unique_id(new_site_id)
+                self._abort_if_unique_id_configured()
+                self._migrate_registry_ids(entry, old_site_id, new_site_id)
+
+            return self.async_update_reload_and_abort(
+                entry,
+                unique_id=new_site_id,
+                title=f"KNMI WOW ({new_site_id[:8]}...)",
+                data_updates={
+                    CONF_SITE_ID: new_site_id,
+                    CONF_AUTH_KEY: new_auth_key,
+                },
+            )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SITE_ID, default=entry.data.get(CONF_SITE_ID, "")
+                    ): str,
+                    vol.Required(
+                        CONF_AUTH_KEY, default=entry.data.get(CONF_AUTH_KEY, "")
+                    ): str,
+                }
+            ),
+        )
+
+    def _migrate_registry_ids(
+        self,
+        entry: config_entries.ConfigEntry,
+        old_site_id: str,
+        new_site_id: str,
+    ) -> None:
+        """Move the status sensor and device to the new site ID.
+
+        The sensor unique_id and device identifier are derived from the site ID,
+        so without this a changed ID would create a new entity and device and
+        leave the old ones orphaned.
+        """
+        ent_reg = er.async_get(self.hass)
+        for entity in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
+            if entity.unique_id.startswith(f"{old_site_id}_"):
+                ent_reg.async_update_entity(
+                    entity.entity_id,
+                    new_unique_id=new_site_id + entity.unique_id[len(old_site_id):],
+                )
+
+        dev_reg = dr.async_get(self.hass)
+        device = dev_reg.async_get_device(identifiers={(DOMAIN, old_site_id)})
+        if device is not None:
+            dev_reg.async_update_device(
+                device.id, new_identifiers={(DOMAIN, new_site_id)}
+            )
 
     @staticmethod
     @callback

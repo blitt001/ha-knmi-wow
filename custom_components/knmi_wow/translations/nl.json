@@ -5,8 +5,8 @@
         "title": "KNMI WOW Inloggegevens",
         "description": "Voer je WOW site-gegevens in. Deze vind je op wow.knmi.nl na het registreren van je weerstation.",
         "data": {
-          "site_id": "Site ID",
-          "auth_key": "Authenticatiesleutel (6-cijferige PIN)"
+          "site_id": "Stations-ID (korte ID uit de registratie-e-mail)",
+          "auth_key": "Authenticatiesleutel (zelfgekozen)"
         }
       },
       "sensors": {
@@ -31,6 +31,14 @@
           "update_interval": "Upload interval (minuten)",
           "debug_mode": "Debug modus inschakelen (logt verzonden data)"
         }
+      },
+      "reconfigure": {
+        "title": "Stations-ID / authenticatiesleutel wijzigen",
+        "description": "Werk de gegevens van je WOW-station bij. Gebruik de korte stations-ID uit de registratie-e-mail en je zelfgekozen authenticatiesleutel. Sensorkoppelingen en opties blijven behouden.",
+        "data": {
+          "site_id": "Stations-ID (korte ID uit de registratie-e-mail)",
+          "auth_key": "Authenticatiesleutel (zelfgekozen)"
+        }
       }
     },
     "error": {
@@ -39,7 +47,8 @@
       "unknown": "Onverwachte fout"
     },
     "abort": {
-      "already_configured": "Deze WOW site is al geconfigureerd"
+      "already_configured": "Deze WOW site is al geconfigureerd",
+      "reconfigure_successful": "Gegevens bijgewerkt. De integratie is opnieuw geladen."
     }
   },
   "options": {
