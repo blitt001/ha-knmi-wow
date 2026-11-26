@@ -22,8 +22,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Create the coordinator
     coordinator = KNMIWOWCoordinator(hass, entry)
 
-    # Do initial refresh
-    await coordinator.async_config_entry_first_refresh()
+    # No upload during setup: the first upload happens one interval after the
+    # sensor entities are added, and is postponed until Home Assistant has
+    # fully started (see coordinator). Seed the data so attributes such as
+    # next_upload are available right away.
+    coordinator.data = coordinator._get_status_data()
 
     # Store coordinator
     hass.data[DOMAIN][entry.entry_id] = coordinator

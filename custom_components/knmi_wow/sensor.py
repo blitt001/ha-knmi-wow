@@ -17,13 +17,10 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_SITE_ID, DOMAIN
+from .const import CONF_SITE_ID, DOMAIN, STATUS_ERROR, STATUS_OK, STATUS_PENDING
 from .coordinator import KNMIWOWCoordinator
 
 # Status options for the enum sensor
-STATUS_PENDING = "pending"
-STATUS_OK = "ok"
-STATUS_ERROR = "error"
 STATUS_OPTIONS = [STATUS_PENDING, STATUS_OK, STATUS_ERROR]
 
 
@@ -121,11 +118,7 @@ class KNMIWOWStatusSensor(KNMIWOWEntity):
     @property
     def native_value(self) -> str:
         """Return the state of the sensor."""
-        if self.coordinator.last_error:
-            return STATUS_ERROR
-        elif self.coordinator.last_upload:
-            return STATUS_OK
-        return STATUS_PENDING
+        return self.coordinator.status
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

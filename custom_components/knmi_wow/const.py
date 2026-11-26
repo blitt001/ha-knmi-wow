@@ -10,6 +10,15 @@ WOW_API_URL: Final = "https://wow.meteo.be/api/v2/send"
 DEFAULT_UPDATE_INTERVAL: Final = 1  # minutes (recommended by KNMI)
 MIN_UPDATE_INTERVAL: Final = 1  # minutes
 
+# Consecutive attempts with unavailable sensors before the status turns to error.
+# Gives source sensors time to report after a restart or a short dropout.
+MAX_UNAVAILABLE_ATTEMPTS: Final = 5
+
+# Upload status values (also the options of the status ENUM sensor)
+STATUS_PENDING: Final = "pending"
+STATUS_OK: Final = "ok"
+STATUS_ERROR: Final = "error"
+
 # Software type identifier
 SOFTWARE_TYPE: Final = "HomeAssistant-KNMI-WOW"
 

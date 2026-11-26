@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 
 import aiohttp
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CoreState, HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 
@@ -21,10 +21,14 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    MAX_UNAVAILABLE_ATTEMPTS,
     SENSOR_CONFIGS,
     SENSOR_TO_WOW_PARAM,
     SENSOR_TYPES,
     SOFTWARE_TYPE,
+    STATUS_ERROR,
+    STATUS_OK,
+    STATUS_PENDING,
     WOW_API_URL,
     convert_value_with_unit,
 )
@@ -62,6 +66,8 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.last_error: str | None = None
         self.upload_count: int = 0
         self.last_request_params: dict[str, str] | None = None
+        self.status: str = STATUS_PENDING
+        self.unavailable_attempts: int = 0
 
     def _all_sensors_available(self) -> tuple[bool, list[str]]:
         """Check if all configured sensors are available.
@@ -85,22 +91,45 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_update_data(self) -> dict[str, Any]:
         """Upload weather data to WOW."""
         try:
+            # Don't upload while Home Assistant is still starting: source
+            # sensors (e.g. a weather station via MQTT) may not have reported yet.
+            if self.hass.state is not CoreState.running:
+                _LOGGER.debug("Home Assistant is still starting, postponing KNMI WOW upload")
+                return self._get_status_data()
+
             # Check if all configured sensors are available
             all_available, unavailable = self._all_sensors_available()
             if not all_available:
-                self.last_error = f"Sensors unavailable: {', '.join(unavailable)}"
-                _LOGGER.warning(
-                    "Skipping KNMI WOW upload - sensors unavailable: %s",
-                    unavailable,
-                )
-                return self._get_status_data(success=False, error=self.last_error)
+                self.unavailable_attempts += 1
+                message = f"Sensors unavailable: {', '.join(unavailable)}"
+                if self.unavailable_attempts >= MAX_UNAVAILABLE_ATTEMPTS:
+                    self._set_error(message)
+                    _LOGGER.warning(
+                        "Skipping KNMI WOW upload - sensors unavailable for %s attempts: %s",
+                        self.unavailable_attempts,
+                        unavailable,
+                    )
+                else:
+                    # Keep the current status (pending after start-up, ok after
+                    # a successful upload) during a short dropout.
+                    _LOGGER.info(
+                        "Skipping KNMI WOW upload - sensors not available yet "
+                        "(attempt %s of %s): %s",
+                        self.unavailable_attempts,
+                        MAX_UNAVAILABLE_ATTEMPTS,
+                        unavailable,
+                    )
+                return self._get_status_data()
+
+            self.unavailable_attempts = 0
 
             # Collect sensor values
             weather_data = self._collect_sensor_data()
 
             if not weather_data:
                 _LOGGER.warning("No sensor data available to upload")
-                return self._get_status_data(success=False, error="No sensor data available")
+                self._set_error("No sensor data available")
+                return self._get_status_data()
 
             # Build the API request
             params = self._build_request_params(weather_data)
@@ -118,22 +147,27 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if success:
                 self.last_upload = dt_util.utcnow()
                 self.last_error = None
+                self.status = STATUS_OK
                 self.upload_count += 1
                 if self.debug_mode:
                     _LOGGER.info("KNMI WOW Debug - Upload successful")
                 else:
                     _LOGGER.info("Successfully uploaded weather data to KNMI WOW")
             else:
-                self.last_error = error
+                self._set_error(error)
                 _LOGGER.error("Failed to upload weather data: %s", error)
 
-            return self._get_status_data(success=success, error=error)
+            return self._get_status_data()
 
         except Exception as ex:
-            error_msg = str(ex)
-            self.last_error = error_msg
+            self._set_error(str(ex))
             _LOGGER.exception("Error uploading weather data to KNMI WOW")
-            return self._get_status_data(success=False, error=error_msg)
+            return self._get_status_data()
+
+    def _set_error(self, message: str | None) -> None:
+        """Mark the integration as failing with the given message."""
+        self.status = STATUS_ERROR
+        self.last_error = message
 
     def _collect_sensor_data(self) -> dict[str, float]:
         """Collect current sensor values from configured entities."""
@@ -229,14 +263,14 @@ class KNMIWOWCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except TimeoutError:
             return False, "Request timed out"
 
-    def _get_status_data(self, success: bool, error: str | None = None) -> dict[str, Any]:
+    def _get_status_data(self) -> dict[str, Any]:
         """Get status data for the coordinator."""
         next_update = dt_util.utcnow() + (self.update_interval or timedelta(minutes=DEFAULT_UPDATE_INTERVAL))
 
         data = {
-            "status": "ok" if success else "error",
+            "status": self.status,
             "last_upload": self.last_upload.isoformat() if self.last_upload else None,
-            "last_error": error,
+            "last_error": self.last_error,
             "next_upload": next_update.isoformat(),
             "upload_count": self.upload_count,
             "debug_mode": self.debug_mode,

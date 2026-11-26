@@ -9,5 +9,5 @@
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/blitt001/ha-knmi-wow/issues",
   "requirements": ["aiohttp>=3.8.0"],
-  "version": "2.0.1"
+  "version": "2.0.2"
 }
